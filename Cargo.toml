@@ -1,0 +1,10 @@
+[package]
+name = "libc_detector"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "Detects the runtime version of libc on Linux systems"
+
+[dependencies]
+memfd-exec = "0.2.1"
+tracing = "0.1.40"
