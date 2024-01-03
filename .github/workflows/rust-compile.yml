@@ -71,7 +71,8 @@ jobs:
           rustup toolchain list
           cargo -V
           rustc -V
+          cross -V
 
       - name: Run tests
         run: >
-          cross test -- --nocapture
+          cross test --target ${{ matrix.target }} -- --nocapture
