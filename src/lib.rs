@@ -2,8 +2,14 @@
 
 #![deny(missing_docs)]
 
-use memfd_exec::{MemFdExecutable, Stdio};
-use std::{path::PathBuf, process::Command};
+use std::{
+    fs::File,
+    io,
+    io::Write,
+    os::{fd::AsRawFd, unix::fs::PermissionsExt},
+    path::PathBuf,
+    process::Command,
+};
 
 /// Returns a list of glibc detectors applicable for the current architecture.
 ///
@@ -57,10 +63,41 @@ fn glibc_detectors() -> Vec<(&'static str, &'static [u8])> {
 /// Detect the current version of `glibc` using a binary detector.
 pub fn glibc_version() -> Option<(u32, u32)> {
     for (arch, detector) in glibc_detectors() {
-        let output = MemFdExecutable::new("glibc-detector", detector)
-            .stdout(Stdio::piped())
-            .output();
+        // Create a temporary file for the detector.
+        let mut f = match tempfile::tempfile() {
+            Ok(f) => f,
+            Err(err) => {
+                tracing::error!(
+                    "failed to create temporary file for glibc detector executable for {arch}: {err}"
+                );
+                continue;
+            }
+        };
+        if let Err(err) = f.write_all(detector) {
+            tracing::error!(
+                "failed to write temporary glibc detector executable for {arch}: {err}"
+            );
+            continue;
+        };
+        let permissions = PermissionsExt::from_mode(0o700);
+        if let Err(err) = f.set_permissions(permissions) {
+            tracing::error!("failed to set permissions on a temporary glibc detector executable for {arch}: {err}");
+            continue;
+        };
 
+        // Re-open the file as readonly through /proc. This is necessary because when we want to
+        // invoke the command it can't be open for writing.
+        let Ok(read_only_f) = File::open(format!("/proc/self/fd/{}", f.as_raw_fd())) else {
+            tracing::error!("failed to reopen a temporary file through /proc");
+            continue;
+        };
+
+        // Drop the temporary file. This will delete it but since we still have an open file handle
+        // we can still use it.
+        drop(f);
+
+        // Invoke the command
+        let output = Command::new(format!("/proc/self/fd/{}", read_only_f.as_raw_fd())).output();
         let stdout = match &output {
             Ok(output) => {
                 if output.status.code() != Some(0) {
@@ -69,14 +106,18 @@ pub fn glibc_version() -> Option<(u32, u32)> {
                 }
                 String::from_utf8_lossy(&output.stdout)
             }
+            Err(err) if err.kind() == io::ErrorKind::NotFound => {
+                tracing::debug!("execution of glibc detector for {arch} failed: {err}, glibc is most likely not present.");
+                continue;
+            }
             Err(err) => {
-                tracing::debug!("glibc detector for {arch} failed: {err}");
+                tracing::debug!("execution of glibc detector for {arch} failed: {err}");
                 continue;
             }
         };
 
         let Some((major, minor)) = parse_major_minor_version(&stdout) else {
-            tracing::debug!("failed to parse glibc version '{stdout}'");
+            tracing::warn!("failed to parse glibc version '{stdout}'");
             continue;
         };
 
@@ -149,7 +190,12 @@ pub struct LibCVersion {
     pub version: (u32, u32),
 }
 
-/// Detects the current version and family of libc on the system.
+/// Tries to detect the most likely version of libc on the current system.
+///
+/// If the system contains multiple libc implementations the most likely used one is returned. If
+/// for instance both glibc and musl are found its more likely that glibc is used. If you want to
+/// detect all libc implementations use the more specific functions (see [`glibc_version`] and
+/// [`musl_libc_version`]).
 pub fn libc_version() -> Option<LibCVersion> {
     if let Some(version) = glibc_version() {
         return Some(LibCVersion {
