@@ -25,7 +25,7 @@ jobs:
       matrix:
         include:
           - { name: x86_64, target: x86_64-unknown-linux-gnu }
-          - { name: i686, target: x86_64-unknown-linux-gnu }
+          - { name: i686, target: i686-unknown-linux-gnu }
           - { name: aarch64, target: aarch64-unknown-linux-gnu }
           - { name: armv7l, target: arm-unknown-linux-gnueabi }
           - { name: ppc64, target: powerpc64-unknown-linux-gnu }
@@ -52,4 +52,4 @@ jobs:
           version: 0.12.0
 
       - name: Run build
-        run: cargo +nightly zigbuild -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --target ${{ matrix.target }} --release
+        run: cargo +nightly-2024-07-14 zigbuild --manifest-path linux-glibc-detectors/Cargo.toml -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --target ${{ matrix.target }} --release
