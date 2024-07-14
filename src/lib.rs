@@ -121,7 +121,15 @@ pub fn glibc_version() -> Option<(u32, u32)> {
 
 /// Detect the current version of `musl` `libc` by inspecting the `/lib/ld-musl-*.so.1` loaders.
 pub fn musl_libc_version() -> Option<(u32, u32)> {
-    for arch in ["x86_64", "aarch64", "i386", "armhf", "arm", "powerpc64le", "s390x"] {
+    for arch in [
+        "x86_64",
+        "aarch64",
+        "i386",
+        "armhf",
+        "arm",
+        "powerpc64le",
+        "s390x",
+    ] {
         let loader = PathBuf::from(format!("/lib/ld-musl-{arch}.so.1"));
         if !loader.exists() {
             continue;
