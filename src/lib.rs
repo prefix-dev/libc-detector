@@ -48,7 +48,7 @@ fn glibc_detectors() -> Vec<(&'static str, &'static [u8])> {
             include_bytes!("../linux-glibc-detectors/bin/linux-glibc-detector-ppc64le").as_slice(),
         ));
     }
-    
+
     detectors
 }
 
