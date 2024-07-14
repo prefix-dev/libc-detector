@@ -1,0 +1,14 @@
+[package]
+name = "linux-glibc-detector"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+libc = "0.2.155"
+
+[profile.release]
+strip = true
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
