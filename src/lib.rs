@@ -21,11 +21,11 @@ fn glibc_detectors() -> Vec<(&'static str, &'static [u8])> {
     {
         detectors.push((
             "x86_64",
-            include_bytes!("../linux-glibc-detectors/glibc-detector-x86_64").as_slice(),
+            include_bytes!("../linux-glibc-detectors/bin/linux-glibc-detector-x86_64").as_slice(),
         ));
         detectors.push((
             "i686",
-            include_bytes!("../linux-glibc-detectors/glibc-detector-i686").as_slice(),
+            include_bytes!("../linux-glibc-detectors/bin/linux-glibc-detector-i686").as_slice(),
         ));
     }
 
@@ -33,11 +33,11 @@ fn glibc_detectors() -> Vec<(&'static str, &'static [u8])> {
     {
         detectors.push((
             "aarch64",
-            include_bytes!("../linux-glibc-detectors/glibc-detector-aarch64").as_slice(),
+            include_bytes!("../linux-glibc-detectors/bin/linux-glibc-detector-aarch64").as_slice(),
         ));
         detectors.push((
             "armv7l",
-            include_bytes!("../linux-glibc-detectors/glibc-detector-armv7l").as_slice(),
+            include_bytes!("../linux-glibc-detectors/bin/linux-glibc-detector-armv7l").as_slice(),
         ));
     }
 
@@ -45,18 +45,10 @@ fn glibc_detectors() -> Vec<(&'static str, &'static [u8])> {
     {
         detectors.push((
             "ppc64le",
-            include_bytes!("../linux-glibc-detectors/glibc-detector-ppc64le").as_slice(),
+            include_bytes!("../linux-glibc-detectors/bin/linux-glibc-detector-ppc64le").as_slice(),
         ));
     }
-
-    #[cfg(target_arch = "s390x")]
-    {
-        detectors.push((
-            "s390x",
-            include_bytes!("../linux-glibc-detectors/glibc-detector-s390x").as_slice(),
-        ));
-    }
-
+    
     detectors
 }
 
