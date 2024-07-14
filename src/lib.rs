@@ -41,7 +41,15 @@ fn glibc_detectors() -> Vec<(&'static str, &'static [u8])> {
         ));
     }
 
-    #[cfg(target_arch = "powerpc64")]
+    #[cfg(all(target_arch = "powerpc64", target_endian = "big"))]
+    {
+        detectors.push((
+            "ppc64le",
+            include_bytes!("../linux-glibc-detectors/bin/linux-glibc-detector-ppc64").as_slice(),
+        ));
+    }
+
+    #[cfg(all(target_arch = "powerpc64", target_endian = "little"))]
     {
         detectors.push((
             "ppc64le",
