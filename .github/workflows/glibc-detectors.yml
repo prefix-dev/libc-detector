@@ -32,7 +32,7 @@ jobs:
           - { name: aarch64, target: aarch64-unknown-linux-gnu }
           - { name: armv7l, target: arm-unknown-linux-gnueabi }
           - { name: ppc64, target: powerpc64-unknown-linux-gnu }
-          - { name: ppcle64, target: powerpc64le-unknown-linux-gnu }
+          - { name: ppc64le, target: powerpc64le-unknown-linux-gnu }
 #          - { name: s390x, target: s390x-unknown-linux-gnu }
     steps:
       - name: Checkout source code
