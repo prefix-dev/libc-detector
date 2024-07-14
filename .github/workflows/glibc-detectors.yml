@@ -30,7 +30,7 @@ jobs:
           - { name: armv7l, target: arm-unknown-linux-gnueabi }
           - { name: ppc64, target: powerpc64-unknown-linux-gnu }
           - { name: ppcle64, target: powerpc64le-unknown-linux-gnu }
-          - { name: s390x, target: s390x-unknown-linux-gnu }
+#          - { name: s390x, target: s390x-unknown-linux-gnu }
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
@@ -54,3 +54,11 @@ jobs:
 
       - name: Run build
         run: cargo +nightly-2024-07-14 zigbuild --manifest-path linux-glibc-detectors/Cargo.toml -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --target ${{ matrix.target }} --release
+
+      - name: Move binary
+        run: mv linux-glibc-detectors/target/${{ matrix.target }}/release/linux-glibc-detectors linux-glibc-detector-${{ matrix.name }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-glibc-detector-${{ matrix.name }}
+          path: linux-glibc-detector-${{ matrix.name }}
