@@ -44,7 +44,7 @@ fn glibc_detectors() -> Vec<(&'static str, &'static [u8])> {
     #[cfg(all(target_arch = "powerpc64", target_endian = "big"))]
     {
         detectors.push((
-            "ppc64le",
+            "ppc64",
             include_bytes!("../linux-glibc-detectors/bin/linux-glibc-detector-ppc64").as_slice(),
         ));
     }
@@ -225,6 +225,7 @@ pub fn libc_version() -> Option<LibCVersion> {
 #[cfg(test)]
 mod test {
     use super::*;
+    use tracing_test::traced_test;
 
     #[test]
     fn test_glibc_version() {
@@ -237,6 +238,7 @@ mod test {
     }
 
     #[test]
+    #[traced_test]
     fn test_libc_version() {
         let version = libc_version();
         match version {
