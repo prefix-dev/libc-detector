@@ -40,6 +40,7 @@ jobs:
         with:
           toolchain: nightly-2024-07-14
           targets: ${{ matrix.target }}
+          components: rust-src
 
       - uses: taiki-e/install-action@v2
         name: Install cargo-zigbuild
