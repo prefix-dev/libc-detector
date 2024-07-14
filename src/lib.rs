@@ -21,11 +21,11 @@ fn glibc_detectors() -> Vec<(&'static str, &'static [u8])> {
     {
         detectors.push((
             "x86_64",
-            include_bytes!("./linux-glibc-detectors/glibc-detector-x86_64").as_slice(),
+            include_bytes!("../linux-glibc-detectors/bin/linux-glibc-detector-x86_64").as_slice(),
         ));
         detectors.push((
             "i686",
-            include_bytes!("./linux-glibc-detectors/glibc-detector-i686").as_slice(),
+            include_bytes!("../linux-glibc-detectors/bin/linux-glibc-detector-i686").as_slice(),
         ));
     }
 
@@ -33,27 +33,27 @@ fn glibc_detectors() -> Vec<(&'static str, &'static [u8])> {
     {
         detectors.push((
             "aarch64",
-            include_bytes!("./linux-glibc-detectors/glibc-detector-aarch64").as_slice(),
+            include_bytes!("../linux-glibc-detectors/bin/linux-glibc-detector-aarch64").as_slice(),
         ));
         detectors.push((
             "armv7l",
-            include_bytes!("./linux-glibc-detectors/glibc-detector-armv7l").as_slice(),
+            include_bytes!("../linux-glibc-detectors/bin/linux-glibc-detector-armv7l").as_slice(),
         ));
     }
 
-    #[cfg(target_arch = "powerpc64")]
+    #[cfg(all(target_arch = "powerpc64", target_endian = "big"))]
+    {
+        detectors.push((
+            "ppc64",
+            include_bytes!("../linux-glibc-detectors/bin/linux-glibc-detector-ppc64").as_slice(),
+        ));
+    }
+
+    #[cfg(all(target_arch = "powerpc64", target_endian = "little"))]
     {
         detectors.push((
             "ppc64le",
-            include_bytes!("./linux-glibc-detectors/glibc-detector-ppc64le").as_slice(),
-        ));
-    }
-
-    #[cfg(target_arch = "s390x")]
-    {
-        detectors.push((
-            "s390x",
-            include_bytes!("./linux-glibc-detectors/glibc-detector-s390x").as_slice(),
+            include_bytes!("../linux-glibc-detectors/bin/linux-glibc-detector-ppc64le").as_slice(),
         ));
     }
 
@@ -129,7 +129,15 @@ pub fn glibc_version() -> Option<(u32, u32)> {
 
 /// Detect the current version of `musl` `libc` by inspecting the `/lib/ld-musl-*.so.1` loaders.
 pub fn musl_libc_version() -> Option<(u32, u32)> {
-    for arch in ["x86_64", "aarch64", "i386", "armhf", "powerpc64le", "s390x"] {
+    for arch in [
+        "x86_64",
+        "aarch64",
+        "i386",
+        "armhf",
+        "arm",
+        "powerpc64le",
+        "s390x",
+    ] {
         let loader = PathBuf::from(format!("/lib/ld-musl-{arch}.so.1"));
         if !loader.exists() {
             continue;
@@ -217,6 +225,7 @@ pub fn libc_version() -> Option<LibCVersion> {
 #[cfg(test)]
 mod test {
     use super::*;
+    use tracing_test::traced_test;
 
     #[test]
     fn test_glibc_version() {
@@ -229,6 +238,7 @@ mod test {
     }
 
     #[test]
+    #[traced_test]
     fn test_libc_version() {
         let version = libc_version();
         match version {
